@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, priority_badge %}
+{% block title %}My complaints{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+  <div><h1 class="h3 page-title">My complaints</h1><p class="page-sub mb-0">Filter by category, status or date.</p></div>
+  <a class="btn btn-primary" href="{{ url_for('student.new_complaint') }}">+ New complaint</a>
+</div>
+<form class="card card-body my-3" method="get">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-3"><label class="form-label small mb-1">Search</label>
+      <input class="form-control" name="q" value="{{ filters.q }}" placeholder="ID, title, location"></div>
+    <div class="col-6 col-md-2"><label class="form-label small mb-1">Category</label>
+      <select class="form-select" name="category"><option value="">All</option>
+      {% for cat in categories %}<option value="{{ cat.id }}" {% if filters.category == cat.id|string %}selected{% endif %}>{{ cat.name }}</option>{% endfor %}
+      </select></div>
+    <div class="col-6 col-md-2"><label class="form-label small mb-1">Status</label>
+      <select class="form-select" name="status"><option value="">All</option>
+      {% for s in statuses %}<option {% if filters.status == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+      </select></div>
+    <div class="col-6 col-md-2"><label class="form-label small mb-1">From</label>
+      <input class="form-control" type="date" name="date_from" value="{{ filters.date_from }}"></div>
+    <div class="col-6 col-md-2"><label class="form-label small mb-1">To</label>
+      <input class="form-control" type="date" name="date_to" value="{{ filters.date_to }}"></div>
+    <div class="col-md-1 d-grid"><button class="btn btn-primary">Go</button></div>
+  </div>
+</form>
+<div class="card"><div class="table-responsive">
+  <table class="table mb-0">
+    <thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Location</th><th>Priority</th><th>Status</th><th>Submitted</th></tr></thead>
+    <tbody>
+    {% for c in complaints %}
+      <tr>
+        <td><a href="{{ url_for('complaints.detail', cid=c.id) }}">{{ c.complaint_code }}</a></td>
+        <td>{{ c.title }}</td><td>{{ c.category_name }}</td><td>{{ c.location }}</td>
+        <td>{{ priority_badge(c.priority) }}</td><td>{{ status_badge(c.status) }}</td>
+        <td>{{ c.created_at|dt(false) }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="7" class="text-center text-muted py-4">No complaints match your filters.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div></div>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% macro status_badge(status) -%}
+<span class="badge badge-status status-{{ status|lower|replace(' ', '-') }}">{{ status }}</span>
+{%- endmacro %}
+
+{% macro priority_badge(priority) -%}
+<span class="badge badge-priority prio-{{ priority|lower }}">{{ priority }}</span>
+{%- endmacro %}
+
+{% macro stat_card(label, value, css='') -%}
+<div class="stat-card {{ css }}">
+  <div class="label">{{ label }}</div>
+  <div class="value">{{ value }}</div>
+</div>
+{%- endmacro %}

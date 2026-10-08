@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, priority_badge, stat_card %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1 class="h3 page-title">Hello, {{ g.user.name.split(' ')[0] }}</h1>
+<p class="page-sub">Submit a new complaint or track your existing complaints here.</p>
+
+<div class="admin-actions mb-4">
+  <a class="admin-action admin-action-primary" href="{{ url_for('student.new_complaint') }}">
+    <span>📝</span>
+    <div>
+      <div class="admin-action-title">Submit complaint</div>
+      <small>Report a new issue</small>
+    </div>
+  </a>
+  <a class="admin-action admin-action-success" href="{{ url_for('student.my_complaints') }}">
+    <span>📌</span>
+    <div>
+      <div class="admin-action-title">Track complaints</div>
+      <small>Check status and updates</small>
+    </div>
+  </a>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">{{ stat_card('Total complaints', counts.total) }}</div>
+  <div class="col-6 col-lg-3">{{ stat_card('Pending', counts.pending, 'stat-pending') }}</div>
+  <div class="col-6 col-lg-3">{{ stat_card('In progress', counts.in_progress, 'stat-progress') }}</div>
+  <div class="col-6 col-lg-3">{{ stat_card('Resolved', counts.resolved, 'stat-resolved') }}</div>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>Recent complaints</span>
+    <a class="btn btn-primary btn-sm" href="{{ url_for('student.new_complaint') }}">+ New complaint</a>
+  </div>
+  <div class="table-responsive">
+    <table class="table mb-0">
+      <thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Priority</th><th>Status</th><th>Submitted</th></tr></thead>
+      <tbody>
+      {% for c in recent %}
+        <tr>
+          <td><a href="{{ url_for('complaints.detail', cid=c.id) }}">{{ c.complaint_code }}</a></td>
+          <td>{{ c.title }}</td><td>{{ c.category_name }}</td>
+          <td>{{ priority_badge(c.priority) }}</td><td>{{ status_badge(c.status) }}</td>
+          <td>{{ c.created_at|dt(false) }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6" class="text-center text-muted py-4">You have not submitted any complaints yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% if avg_hours is not none %}
+<p class="text-muted small mt-3">Average time to resolve your complaints: <strong>{{ avg_hours|duration }}</strong></p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Categories{% endblock %}
+{% block content %}
+<h1 class="h3 page-title">Complaint categories</h1>
+<p class="page-sub">"Default urgency" is the starting score used by the smart priority recommendation (0 = low, 3 = serious).</p>
+<div class="row g-3">
+  <div class="col-lg-8"><div class="card"><div class="table-responsive">
+    <table class="table mb-0">
+      <thead><tr><th>Name</th><th>Default urgency</th><th>Complaints</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+      {% for cat in categories %}
+        <tr>
+          <td>{{ cat.name }}</td><td>{{ cat.base_score }}</td><td>{{ cat.complaint_count }}</td>
+          <td>{% if cat.is_active %}<span class="badge text-bg-success">Active</span>{% else %}<span class="badge text-bg-secondary">Inactive</span>{% endif %}</td>
+          <td class="text-end">
+            <form method="post" action="{{ url_for('admin.toggle_category', cat_id=cat.id) }}" data-confirm="{{ 'Deactivate' if cat.is_active else 'Activate' }} this category?">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-sm btn-outline-primary">{{ 'Deactivate' if cat.is_active else 'Activate' }}</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div></div></div>
+  <div class="col-lg-4"><div class="card"><div class="card-header">Add a category</div><div class="card-body">
+    <form method="post" action="{{ url_for('admin.add_category') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="mb-3"><label class="form-label" for="name">Name</label>
+        <input class="form-control" id="name" name="name" maxlength="50" required></div>
+      <div class="mb-3"><label class="form-label" for="base_score">Default urgency</label>
+        <select class="form-select" id="base_score" name="base_score">
+          <option value="0">0 - Low</option><option value="1">1 - Normal</option>
+          <option value="2">2 - Important</option><option value="3">3 - Serious</option></select></div>
+      <button class="btn btn-primary w-100">Add category</button>
+    </form>
+  </div></div></div>
+</div>
+<p class="text-muted small mt-3">Categories are deactivated rather than deleted so that old complaints keep their category.</p>
+{% endblock %}

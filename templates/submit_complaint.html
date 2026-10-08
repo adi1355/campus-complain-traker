@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Submit complaint{% endblock %}
+{% block content %}
+<h1 class="h3 page-title">Submit a complaint</h1>
+<p class="page-sub">Describe the problem clearly. A priority is suggested automatically and reviewed by the administrator.</p>
+<div class="card"><div class="card-body">
+  <form method="post" enctype="multipart/form-data" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="row g-3">
+      <div class="col-md-8">
+        <label class="form-label" for="title">Title</label>
+        <input class="form-control" id="title" name="title" value="{{ form.title }}" minlength="5" maxlength="120" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="category">Category</label>
+        <select class="form-select" id="category" name="category" required>
+          <option value="">Choose...</option>
+          {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if form.category == cat.id|string %}selected{% endif %}>{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12">
+        <label class="form-label" for="location">Location</label>
+        <input class="form-control" id="location" name="location" value="{{ form.location }}" maxlength="100" placeholder="e.g. Block B, Room 204" required>
+      </div>
+      <div class="col-12">
+        <label class="form-label" for="description">Description</label>
+        <textarea class="form-control" id="description" name="description" rows="5" minlength="10" maxlength="2000" required>{{ form.description }}</textarea>
+      </div>
+      <div class="col-12">
+        <label class="form-label" for="image">Photo (optional)</label>
+        <input class="form-control" id="image" name="image" type="file" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp">
+        <div class="form-text">PNG, JPG or WEBP, up to 2 MB.</div>
+      </div>
+    </div>
+    <div class="mt-4 d-flex gap-2">
+      <button class="btn btn-primary">Submit complaint</button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('student.dashboard') }}">Cancel</a>
+    </div>
+  </form>
+</div></div>
+{% endblock %}

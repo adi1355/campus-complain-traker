@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, priority_badge %}
+{% block title %}{{ c.complaint_code }}{% endblock %}
+{% block content %}
+<a class="text-decoration-none small" href="{{ url_for('admin.complaints') if g.user.role == 'admin' else url_for('student.my_complaints') }}">&larr; Back to list</a>
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mt-2 mb-3">
+  <div>
+    <h1 class="h3 page-title mb-1">{{ c.title }}</h1>
+    <div class="text-muted">Complaint ID <strong>{{ c.complaint_code }}</strong></div>
+  </div>
+  <div class="d-flex gap-2">{{ priority_badge(c.priority) }} {{ status_badge(c.status) }}</div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card mb-3"><div class="card-header">Details</div><div class="card-body">
+      <div class="row g-3 mb-3">
+        <div class="col-6 col-md-4"><div class="detail-label">Category</div>{{ c.category_name }}</div>
+        <div class="col-6 col-md-4"><div class="detail-label">Location</div>{{ c.location }}</div>
+        <div class="col-6 col-md-4"><div class="detail-label">Submitted</div>{{ c.created_at|dt }}</div>
+        {% if g.user.role == 'admin' %}
+          <div class="col-6 col-md-4"><div class="detail-label">Student</div>{{ c.student_name }}</div>
+          <div class="col-6 col-md-4"><div class="detail-label">Email</div>{{ c.student_email }}</div>
+        {% endif %}
+        <div class="col-6 col-md-4"><div class="detail-label">Last updated</div>{{ c.updated_at|dt }}</div>
+        {% if c.resolved_at %}
+          <div class="col-6 col-md-4"><div class="detail-label">Resolved</div>{{ c.resolved_at|dt }}</div>
+        {% endif %}
+      </div>
+      <div class="detail-label">Description</div>
+      <p style="white-space: pre-line">{{ c.description }}</p>
+      {% if c.image_filename %}
+        <div class="detail-label mb-1">Attached image</div>
+        <a href="{{ url_for('complaints.upload', filename=c.image_filename) }}" target="_blank" rel="noopener">
+          <img class="complaint-image" src="{{ url_for('complaints.upload', filename=c.image_filename) }}" alt="Image attached to the complaint">
+        </a>
+      {% endif %}
+    </div></div>
+
+    {% if feedback %}
+    <div class="card mb-3"><div class="card-header">Feedback</div><div class="card-body">
+      <div class="fs-5" aria-label="Rating {{ feedback.rating }} out of 5">{{ '★' * feedback.rating }}{{ '☆' * (5 - feedback.rating) }}</div>
+      {% if feedback.comments %}<p class="mb-1" style="white-space: pre-line">{{ feedback.comments }}</p>{% endif %}
+      <div class="text-muted small">Submitted {{ feedback.created_at|dt }}{% if feedback.is_anonymous %} &middot; shown to others as anonymous{% endif %}</div>
+    </div></div>
+    {% elif can_give_feedback %}
+    <div class="card mb-3 border-primary"><div class="card-header">How did we do? Give feedback</div><div class="card-body">
+      <form method="post" action="{{ url_for('complaints.feedback', cid=c.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="mb-3">
+          <label class="form-label d-block">Rating</label>
+          <div class="star-rating">
+            {% for n in range(1, 6) %}
+              <div class="form-check form-check-inline m-0">
+                <input class="form-check-input" type="radio" name="rating" id="r{{ n }}" value="{{ n }}" required>
+                <label class="form-check-label" for="r{{ n }}">{{ n }} &#9733;</label>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="comments">Comments (optional)</label>
+          <textarea class="form-control" id="comments" name="comments" rows="3" maxlength="500"></textarea>
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" name="anonymous" id="anonymous" value="1" checked>
+          <label class="form-check-label" for="anonymous">Submit anonymously (administrators will not see my name next to this feedback)</label>
+        </div>
+        <button class="btn btn-primary">Submit feedback</button>
+      </form>
+    </div></div>
+    {% endif %}
+  </div>
+
+  <div class="col-lg-5">
+    {% if g.user.role == 'admin' %}
+    <div class="card mb-3 border-primary"><div class="card-header">Update complaint</div><div class="card-body">
+      <div class="small text-muted mb-3">
+        Suggested priority: {{ priority_badge(c.suggested_priority) if c.suggested_priority else '-' }}
+        {% if c.priority_reason %}<br>{{ c.priority_reason }}{% endif %}
+      </div>
+      <form method="post" action="{{ url_for('admin.update_complaint', cid=c.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="row g-2 mb-3">
+          <div class="col-6"><label class="form-label" for="status">Status</label>
+            <select class="form-select" id="status" name="status">
+              {% for s in statuses %}<option {% if s == c.status %}selected{% endif %}>{{ s }}</option>{% endfor %}
+            </select></div>
+          <div class="col-6"><label class="form-label" for="priority">Priority</label>
+            <select class="form-select" id="priority" name="priority">
+              {% for p in priorities %}<option {% if p == c.priority %}selected{% endif %}>{{ p }}</option>{% endfor %}
+            </select></div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="remarks">Remarks / resolution note</label>
+          <textarea class="form-control" id="remarks" name="remarks" rows="4" maxlength="1000" placeholder="Visible to the student. Required when marking as Resolved."></textarea>
+        </div>
+        <button class="btn btn-primary w-100">Save update</button>
+      </form>
+    </div></div>
+    {% endif %}
+
+    <div class="card"><div class="card-header">Progress history</div><div class="card-body">
+      <ul class="timeline mb-0">
+        {% for h in history %}
+        <li>
+          <div>
+            {% if h.previous_status %}{{ status_badge(h.previous_status) }} &rarr; {% endif %}{{ status_badge(h.new_status) }}
+          </div>
+          {% if h.remarks %}<div class="mt-1" style="white-space: pre-line">{{ h.remarks }}</div>{% endif %}
+          <div class="when">{{ h.created_at|dt }}{% if h.updater_name %} &middot; {{ h.updater_name }}{% if h.updater_role == 'admin' %} (Administrator){% endif %}{% endif %}</div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

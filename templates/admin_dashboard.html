@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, priority_badge, stat_card %}
+{% block title %}Admin dashboard{% endblock %}
+{% block content %}
+<div class="admin-dark-shell">
+  <div class="admin-hero card mb-4">
+    <div class="admin-hero__top">
+      <div>
+        <div class="admin-kicker">Admin overview</div>
+        <h1 class="admin-hero__title">Campus control center</h1>
+        <p class="admin-hero__subtitle">Monitor incidents, resolve issues, and keep campus operations running smoothly.</p>
+      </div>
+      <div class="admin-hero__actions">
+        <a class="admin-btn admin-btn--danger" href="{{ url_for('admin.complaints', priority='Urgent') }}">Urgent cases</a>
+        <a class="admin-btn admin-btn--primary" href="{{ url_for('admin.complaints') }}">Resolve tickets</a>
+        <a class="admin-btn admin-btn--success" href="{{ url_for('admin.reports') }}">Reports</a>
+      </div>
+    </div>
+
+    <div class="summary-strip">
+      <div class="summary-item">
+        <span class="summary-item__label">Total</span>
+        <strong class="summary-item__value">{{ counts.total }}</strong>
+      </div>
+      <div class="summary-item summary-item--warning">
+        <span class="summary-item__label">Pending</span>
+        <strong class="summary-item__value">{{ counts.pending }}</strong>
+      </div>
+      <div class="summary-item summary-item--info">
+        <span class="summary-item__label">In progress</span>
+        <strong class="summary-item__value">{{ counts.in_progress }}</strong>
+      </div>
+      <div class="summary-item summary-item--success">
+        <span class="summary-item__label">Resolved</span>
+        <strong class="summary-item__value">{{ counts.resolved }}</strong>
+      </div>
+      <div class="summary-item summary-item--accent">
+        <span class="summary-item__label">Avg. time</span>
+        <strong class="summary-item__value">{{ avg_hours|duration }}</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-4 admin-panel">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span>Admin control</span>
+      <span class="small text-muted">Quick actions</span>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6 col-xl-4">
+          <a class="quick-action" href="{{ url_for('admin.complaints') }}">
+            <span class="quick-action-icon">⚙️</span>
+            <div>
+              <div class="fw-semibold">Manage Complaints</div>
+              <small class="text-muted">Review, prioritize, and resolve reports</small>
+            </div>
+          </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+          <a class="quick-action" href="{{ url_for('admin.students') }}">
+            <span class="quick-action-icon">👨‍🎓</span>
+            <div>
+              <div class="fw-semibold">Students</div>
+              <small class="text-muted">View student records and complaint activity</small>
+            </div>
+          </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+          <a class="quick-action" href="{{ url_for('admin.categories') }}">
+            <span class="quick-action-icon">🏷️</span>
+            <div>
+              <div class="fw-semibold">Categories</div>
+              <small class="text-muted">Manage complaint categories and urgency rules</small>
+            </div>
+          </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+          <a class="quick-action" href="{{ url_for('admin.feedback_list') }}">
+            <span class="quick-action-icon">💬</span>
+            <div>
+              <div class="fw-semibold">Feedback</div>
+              <small class="text-muted">Monitor student ratings and comments</small>
+            </div>
+          </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+          <a class="quick-action" href="{{ url_for('admin.reports') }}">
+            <span class="quick-action-icon">📊</span>
+            <div>
+              <div class="fw-semibold">Reports</div>
+              <small class="text-muted">Monthly insights and admin analytics</small>
+            </div>
+          </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+          <a class="quick-action" href="{{ url_for('admin.dashboard') }}#chart-root">
+            <span class="quick-action-icon">📈</span>
+            <div>
+              <div class="fw-semibold">Analytics</div>
+              <small class="text-muted">Open complaint charts and trends</small>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if urgent %}
+  <div class="alert-urgent p-3 mb-4" role="alert">
+    <div class="fw-bold text-danger mb-2">&#9888; {{ urgent|length }} urgent complaint{{ 's' if urgent|length != 1 }} need attention</div>
+    <ul class="mb-0 ps-3">
+      {% for c in urgent[:5] %}
+        <li><a href="{{ url_for('complaints.detail', cid=c.id) }}">{{ c.complaint_code }}</a> &ndash; {{ c.title }}
+          <span class="text-muted">({{ c.category_name }}, {{ c.location }}; {{ status_badge(c.status) }})</span></li>
+      {% endfor %}
+    </ul>
+    {% if urgent|length > 5 %}<a class="small" href="{{ url_for('admin.complaints', priority='Urgent') }}">View all urgent complaints</a>{% endif %}
+  </div>
+  {% endif %}
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg">{{ stat_card('Total complaints', counts.total) }}</div>
+    <div class="col-6 col-lg">{{ stat_card('Pending', counts.pending, 'stat-pending') }}</div>
+    <div class="col-6 col-lg">{{ stat_card('In progress', counts.in_progress, 'stat-progress') }}</div>
+    <div class="col-6 col-lg">{{ stat_card('Resolved', counts.resolved, 'stat-resolved') }}</div>
+    <div class="col-12 col-lg">{{ stat_card('Avg. resolution time', avg_hours|duration, 'stat-time') }}</div>
+  </div>
+
+  <div class="row g-3 mb-4" id="chart-root" data-endpoint="{{ url_for('admin.stats_api') }}">
+    <div class="col-lg-4"><div class="card h-100"><div class="card-header">Status</div>
+      <div class="card-body"><div class="chart-box"><canvas id="statusChart"></canvas></div></div></div></div>
+    <div class="col-lg-8"><div class="card h-100"><div class="card-header">Complaints by category</div>
+      <div class="card-body"><div class="chart-box"><canvas id="categoryChart"></canvas></div></div></div></div>
+    <div class="col-lg-8"><div class="card h-100"><div class="card-header">Monthly trend (last 12 months)</div>
+      <div class="card-body"><div class="chart-box"><canvas id="monthlyChart"></canvas></div></div></div></div>
+    <div class="col-lg-4"><div class="card h-100"><div class="card-header">Priority mix</div>
+      <div class="card-body"><div class="chart-box"><canvas id="priorityChart"></canvas></div></div></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span>Latest complaints</span><a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.complaints') }}">Manage all</a>
+    </div>
+    <div class="table-responsive">
+      <table class="table mb-0">
+        <thead><tr><th>ID</th><th>Title</th><th>Student</th><th>Priority</th><th>Status</th><th>Submitted</th></tr></thead>
+        <tbody>
+        {% for c in recent %}
+          <tr>
+            <td><a href="{{ url_for('complaints.detail', cid=c.id) }}">{{ c.complaint_code }}</a></td>
+            <td>{{ c.title }}</td><td>{{ c.student_name }}</td>
+            <td>{{ priority_badge(c.priority) }}</td><td>{{ status_badge(c.status) }}</td><td>{{ c.created_at|dt(false) }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="6" class="text-center text-muted py-4">No complaints yet.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <p class="text-muted small mt-3">{{ student_count }} registered student{{ 's' if student_count != 1 }}{% if avg_rating is not none %} &middot; average feedback rating {{ '%.1f'|format(avg_rating) }}/5{% endif %}</p>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

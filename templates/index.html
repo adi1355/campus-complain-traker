@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Welcome{% endblock %}
+{% block public %}
+<div class="auth-wrap">
+  <section class="auth-hero">
+    <div class="brand px-0"><span class="brand-mark">CT</span> Campus Tracker</div>
+    <h1 class="mt-3">Report it. Track it. See it fixed.</h1>
+    <p class="lead" style="color:#d5e1f7">One place for classroom, electricity, Wi-Fi, laboratory and cleanliness complaints &mdash; with a visible history of every update.</p>
+    <ul class="ps-3 mt-3">
+      <li>Submit a complaint with a photo in under a minute</li>
+      <li>Follow each status change and the administrator's remarks</li>
+      <li>Urgent problems are highlighted for the administration</li>
+    </ul>
+  </section>
+  <section class="auth-form">
+    <div class="auth-card text-center">
+      {% include "_flash.html" %}
+      <h2 class="page-title">Smart Campus Complaint &amp; Solution Tracker</h2>
+      <p class="page-sub">Log in with your college account, or create a student account.</p>
+      <div class="d-grid gap-2">
+        <a class="btn btn-primary btn-lg" href="{{ url_for('auth.login') }}">Log in</a>
+        <a class="btn btn-outline-primary btn-lg" href="{{ url_for('auth.register') }}">Register as student</a>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

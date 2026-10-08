@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, priority_badge %}
+{% block title %}Manage complaints{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+  <div><h1 class="h3 page-title">Manage complaints</h1>
+  <p class="page-sub mb-0">{{ complaints|length }} complaint{{ 's' if complaints|length != 1 }} shown. Urgent and unresolved complaints are listed first.</p></div>
+  <a class="btn btn-outline-primary" href="{{ url_for('admin.export_csv', **filters) }}">Export CSV</a>
+</div>
+<form class="card card-body my-3" method="get">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-3"><label class="form-label small mb-1">Search</label>
+      <input class="form-control" name="q" value="{{ filters.q }}" placeholder="ID, title, location, student"></div>
+    <div class="col-6 col-md-2"><label class="form-label small mb-1">Status</label>
+      <select class="form-select" name="status"><option value="">All</option>
+      {% for s in statuses %}<option {% if filters.status == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+    <div class="col-6 col-md-2"><label class="form-label small mb-1">Priority</label>
+      <select class="form-select" name="priority"><option value="">All</option>
+      {% for p in priorities %}<option {% if filters.priority == p %}selected{% endif %}>{{ p }}</option>{% endfor %}</select></div>
+    <div class="col-6 col-md-2"><label class="form-label small mb-1">Category</label>
+      <select class="form-select" name="category"><option value="">All</option>
+      {% for cat in categories %}<option value="{{ cat.id }}" {% if filters.category == cat.id|string %}selected{% endif %}>{{ cat.name }}</option>{% endfor %}</select></div>
+    <div class="col-6 col-md-1"><label class="form-label small mb-1">From</label>
+      <input class="form-control" type="date" name="date_from" value="{{ filters.date_from }}"></div>
+    <div class="col-6 col-md-1"><label class="form-label small mb-1">To</label>
+      <input class="form-control" type="date" name="date_to" value="{{ filters.date_to }}"></div>
+    <div class="col-6 col-md-1 d-grid"><button class="btn btn-primary">Go</button></div>
+  </div>
+</form>
+<div class="card"><div class="table-responsive">
+  <table class="table mb-0">
+    <thead><tr><th>ID</th><th>Title</th><th>Student</th><th>Category</th><th>Location</th><th>Priority</th><th>Status</th><th>Submitted</th><th></th></tr></thead>
+    <tbody>
+    {% for c in complaints %}
+      <tr class="{% if c.priority == 'Urgent' and c.status != 'Resolved' %}row-urgent{% endif %}">
+        <td class="text-nowrap">{{ c.complaint_code }}</td><td>{{ c.title }}</td><td>{{ c.student_name }}</td>
+        <td>{{ c.category_name }}</td><td>{{ c.location }}</td>
+        <td>{{ priority_badge(c.priority) }}</td><td>{{ status_badge(c.status) }}</td>
+        <td class="text-nowrap">{{ c.created_at|dt(false) }}</td>
+        <td><a class="btn btn-sm btn-primary" href="{{ url_for('complaints.detail', cid=c.id) }}">Open</a></td>
+      </tr>
+    {% else %}
+      <tr><td colspan="9" class="text-center text-muted py-4">No complaints match your filters.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div></div>
+{% endblock %}

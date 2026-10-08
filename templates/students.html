@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Students{% endblock %}
+{% block content %}
+<h1 class="h3 page-title">Registered students</h1>
+<p class="page-sub">{{ students|length }} student account{{ 's' if students|length != 1 }}.</p>
+<div class="card"><div class="table-responsive">
+  <table class="table mb-0">
+    <thead><tr><th>Name</th><th>Email</th><th>Registered</th><th class="text-end">Complaints</th></tr></thead>
+    <tbody>
+    {% for s in students %}
+      <tr><td>{{ s.name }}</td><td>{{ s.email }}</td><td>{{ s.created_at|dt(false) }}</td><td class="text-end">{{ s.complaint_count }}</td></tr>
+    {% else %}
+      <tr><td colspan="4" class="text-center text-muted py-4">No students have registered yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div></div>
+{% endblock %}

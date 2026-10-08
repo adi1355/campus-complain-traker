@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Feedback{% endblock %}
+{% block content %}
+<h1 class="h3 page-title">Student feedback</h1>
+<p class="page-sub">{{ feedback|length }} response{{ 's' if feedback|length != 1 }}{% if avg_rating is not none %} &middot; average rating <strong>{{ '%.1f'|format(avg_rating) }}/5</strong>{% endif %}.
+  Anonymous feedback hides the student's name and the complaint ID.</p>
+<div class="card"><div class="table-responsive">
+  <table class="table mb-0">
+    <thead><tr><th>Rating</th><th>Category</th><th>Comments</th><th>From</th><th>Date</th></tr></thead>
+    <tbody>
+    {% for f in feedback %}
+      <tr>
+        <td class="text-nowrap" aria-label="{{ f.rating }} out of 5">{{ '★' * f.rating }}{{ '☆' * (5 - f.rating) }}</td>
+        <td>{{ f.category_name }}</td>
+        <td>{{ f.comments or '-' }}</td>
+        <td>{% if f.is_anonymous %}<em>Anonymous</em>{% else %}{{ f.student_name }} (<a href="{{ url_for('complaints.detail', cid=f.complaint_id) }}">{{ f.complaint_code }}</a>){% endif %}</td>
+        <td class="text-nowrap">{{ f.created_at|dt(false) }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="5" class="text-center text-muted py-4">No feedback has been submitted yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div></div>
+{% endblock %}
