@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: campus-complaint-tracker
+    runtime: python
+    plan: starter
+    region: singapore
+    buildCommand: pip install -r requirements.txt
+    startCommand: waitress-serve --listen=0.0.0.0:$PORT --call app:create_app
+    disk:
+      name: campus-complaint-tracker-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: DATABASE
+        value: /var/data/database.db
+      - key: UPLOAD_FOLDER
+        value: /var/data/uploads
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: SESSION_COOKIE_SECURE
+        value: "1"

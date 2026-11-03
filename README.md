@@ -60,7 +60,20 @@ The database (`database.db`) and its tables are created automatically on first s
 Students register themselves, or use the demo ones after step 6:
 `aarav@demo.edu`, `diya@demo.edu`, `rohan@demo.edu` – password `Student@123`.
 
-## 3. Run the automated tests
+## 3. Deploy to Render
+
+The included `render.yaml` configures a Python web service, HTTPS cookies, and
+persistent storage for the SQLite database and uploaded images.
+
+1. Push the project to a GitHub repository and connect that repository in Render.
+2. Choose **New → Blueprint** and select the repository containing `render.yaml`.
+3. Enter a unique `ADMIN_EMAIL` and a strong `ADMIN_PASSWORD` when prompted, then deploy.
+4. Open the Render URL shown for the service.
+
+The persistent disk requires a paid Render instance. Do not upload `.env`,
+`database.db`, or existing private complaint uploads to GitHub.
+
+## 4. Run the automated tests
 
 ```powershell
 python -m unittest discover -s tests -v
@@ -68,7 +81,7 @@ python -m unittest discover -s tests -v
 55 tests; they use a temporary database, so your real data is never touched.
 (They take ~20 s because password hashing is deliberately slow.)
 
-## 4. Project structure
+## 5. Project structure
 
 ```
 CampusComplaintTracker/
@@ -96,7 +109,7 @@ Difference from the brief: uploads live in `uploads/` instead of `static/uploads
 because anything inside `static/` is public. Here only the complaint's owner and
 administrators can open an image.
 
-## 5. Configuration values you must supply
+## 6. Configuration values you must supply
 
 | Setting | Where | Notes |
 |---------|-------|-------|
@@ -106,7 +119,7 @@ administrators can open an image.
 
 To reset everything: stop the server, delete `database.db` and the files in `uploads/`, start again.
 
-## 6. Security summary
+## 7. Security summary
 
 Werkzeug password hashing · session cookies (HttpOnly, SameSite) · session reset on login ·
 role-based route protection · CSRF token on every POST · parameterised SQL everywhere ·
@@ -114,7 +127,7 @@ Jinja2 auto-escaping (XSS) · image extension + magic-byte + size checks, random
 students can only open their own complaints (404 otherwise) · security headers incl. CSP ·
 CSV export guards against spreadsheet-formula injection.
 
-## 7. Known limitations
+## 8. Known limitations
 
 No e-mail/SMS notifications · no password reset · no login rate-limiting · no pagination
 (fine for a college-sized dataset) · built-in Flask server is for demos – use a production

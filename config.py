@@ -15,7 +15,9 @@ class Config:
     SECRET_KEY_FROM_ENV = bool(os.environ.get("SECRET_KEY"))
 
     DATABASE = os.path.join(BASE_DIR, os.environ.get("DATABASE", "database.db"))
-    UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
+    UPLOAD_FOLDER = os.environ.get(
+        "UPLOAD_FOLDER", os.path.join(BASE_DIR, "uploads")
+    )
 
     # Whole request limit (image limit is checked separately, see MAX_IMAGE_BYTES)
     MAX_CONTENT_LENGTH = 3 * 1024 * 1024
